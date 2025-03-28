@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Support Israel - Donate</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,12 +23,12 @@
     </div>
     <button id="startAudio" class="audio-control">🔇 Click to Unmute</button>
     <script>
-        // Money animation
+        // Money animation with touch optimization
         function createMoney() {
             const money = document.createElement('div');
             money.classList.add('money');
             money.innerHTML = '💰';
-            money.style.left = Math.random() * 100 + 'vw';
+            money.style.left = Math.random() * (window.innerWidth - 40) + 20 + 'px';
             money.style.animationDuration = Math.random() * 2 + 3 + 's';
             document.querySelector('.money-container').appendChild(money);
             
@@ -35,92 +37,230 @@
             }, 5000);
         }
         
-        setInterval(createMoney, 300);
+        // Reduce animation rate on mobile
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        setInterval(createMoney, isMobile ? 500 : 300);
 
-        // Audio context and beeper sounds
+        // Audio context and sounds
         let audioContext;
         let isPlaying = false;
+        let audioInitialized = false;
 
         function createBeep(frequency, duration) {
-            if (!audioContext) return;
+            if (!audioContext || !isPlaying) return;
             
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.type = 'sine';
-            oscillator.frequency.value = frequency;
-            
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + duration);
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = frequency;
+                
+                gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (e) {
+                console.log('Audio playback error:', e);
+            }
         }
 
-        function playRandomBeep() {
+        function createShutterSound() {
+            if (!audioContext || !isPlaying) return;
+            
+            try {
+                // Create noise burst for shutter sound
+                const bufferSize = audioContext.sampleRate * 0.1; // 100ms
+                const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                // Create quick click followed by mechanical sound
+                for (let i = 0; i < bufferSize; i++) {
+                    if (i < bufferSize * 0.01) { // Initial click
+                        data[i] = Math.random() * 2 - 1;
+                    } else if (i < bufferSize * 0.03) { // Mechanical sound
+                        data[i] = (Math.random() * 0.5 - 0.25) * Math.exp(-4 * i / bufferSize);
+                    } else { // Fade out
+                        data[i] = (Math.random() * 0.2 - 0.1) * Math.exp(-8 * i / bufferSize);
+                    }
+                }
+
+                const source = audioContext.createBufferSource();
+                const gainNode = audioContext.createGain();
+                
+                gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                
+                source.buffer = buffer;
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                source.start();
+            } catch (e) {
+                console.log('Shutter sound error:', e);
+            }
+        }
+
+        function createVoicemailBeep() {
+            if (!audioContext || !isPlaying) return;
+            
+            try {
+                // Create dual-tone beep characteristic of voicemail
+                const oscillator1 = audioContext.createOscillator();
+                const oscillator2 = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                // Classic voicemail frequencies
+                oscillator1.type = 'sine';
+                oscillator1.frequency.value = 1380; // High tone
+                oscillator2.type = 'sine';
+                oscillator2.frequency.value = 1100; // Low tone
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator1.connect(gainNode);
+                oscillator2.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator1.start();
+                oscillator2.start();
+                oscillator1.stop(audioContext.currentTime + 0.5);
+                oscillator2.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('Voicemail sound error:', e);
+            }
+        }
+
+        function playRandomSound() {
             if (!isPlaying) return;
             
-            const frequency = Math.random() * 200 + 400;
-            const duration = Math.random() * 0.2 + 0.1;
+            // Random sound selection with weights
+            const rand = Math.random();
             
-            createBeep(frequency, duration);
-            
-            const nextInterval = Math.random() * 1000 + 500;
-            setTimeout(playRandomBeep, nextInterval);
+            if (rand < 0.2) { // 20% chance for voicemail beep
+                createVoicemailBeep();
+                // Longer interval after voicemail sound
+                setTimeout(playRandomSound, Math.random() * 2000 + 1500);
+            } else if (rand < 0.4) { // 20% chance for shutter
+                createShutterSound();
+                // Normal interval after shutter
+                setTimeout(playRandomSound, Math.random() * 2000 + 1000);
+            } else { // 60% chance for regular beep
+                const frequency = Math.random() * 200 + 400;
+                const duration = Math.random() * 0.2 + 0.1;
+                createBeep(frequency, duration);
+                // Shorter interval for beeps
+                setTimeout(playRandomSound, Math.random() * (isMobile ? 1500 : 1000) + (isMobile ? 750 : 500));
+            }
         }
 
-        // Try to initialize audio context on page load
+        // iOS-friendly audio initialization
         function initAudio() {
+            if (audioInitialized) return;
+            
             try {
+                if (audioContext) {
+                    audioContext.close();
+                }
+                
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                // Create a silent buffer to unlock audio
+                
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                // Create silent buffer for iOS
                 const buffer = audioContext.createBuffer(1, 1, 22050);
                 const source = audioContext.createBufferSource();
                 source.buffer = buffer;
                 source.connect(audioContext.destination);
                 source.start(0);
                 
-                // Start playing after a small delay
+                audioInitialized = true;
+                
                 setTimeout(() => {
                     isPlaying = true;
                     document.getElementById('startAudio').textContent = '🔊 Click to Mute';
-                    playRandomBeep();
+                    playRandomSound();
                 }, 100);
             } catch (e) {
-                console.log('Audio autoplay failed, waiting for user interaction');
+                console.log('Audio initialization failed:', e);
             }
         }
 
-        // Handle user interaction
-        document.addEventListener('click', function initOnClick() {
-            if (!audioContext) {
-                initAudio();
-            }
-            document.removeEventListener('click', initOnClick);
+        // Handle both touch and click events
+        ['touchstart', 'click'].forEach(eventType => {
+            document.addEventListener(eventType, function initOnInteraction(e) {
+                if (!audioInitialized) {
+                    initAudio();
+                }
+                document.removeEventListener(eventType, initOnInteraction);
+            }, { passive: true });
         });
 
-        // Initialize on page load
-        window.addEventListener('load', initAudio);
+        // iOS-friendly audio toggle
+        document.getElementById('startAudio').addEventListener('touchend', handleAudioToggle, { passive: true });
+        document.getElementById('startAudio').addEventListener('click', handleAudioToggle);
 
-        // Toggle audio button
-        document.getElementById('startAudio').addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent triggering the document click handler
+        function handleAudioToggle(e) {
+            e.preventDefault();
+            e.stopPropagation();
             
-            if (!audioContext) {
+            if (!audioInitialized) {
                 initAudio();
                 return;
             }
             
             isPlaying = !isPlaying;
-            document.getElementById('startAudio').textContent = isPlaying ? '🔊 Click to Mute' : '🔇 Click to Unmute';
             
-            if (isPlaying) {
-                playRandomBeep();
+            if (audioContext) {
+                if (isPlaying) {
+                    audioContext.resume();
+                    document.getElementById('startAudio').textContent = '🔊 Click to Mute';
+                    playRandomSound();
+                } else {
+                    document.getElementById('startAudio').textContent = '🔇 Click to Unmute';
+                }
             }
-        });
+        }
+
+        // Prevent zoom on double-tap for iOS
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+
+        function createCybertruck() {
+            const truck = document.createElement('div');
+            truck.classList.add('cybertruck');
+            truck.innerHTML = '🚛';
+            truck.style.top = Math.random() * (window.innerHeight - 80) + 40 + 'px';
+            document.body.appendChild(truck);
+            
+            // Remove the truck after animation completes
+            setTimeout(() => {
+                truck.remove();
+            }, 8000);
+        }
+        
+        // Create Cybertrucks at random intervals
+        function scheduleCybertruck() {
+            const delay = Math.random() * 10000 + 5000; // Random delay between 5-15 seconds
+            setTimeout(() => {
+                createCybertruck();
+                scheduleCybertruck(); // Schedule next truck
+            }, delay);
+        }
+        
+        scheduleCybertruck(); // Start the Cybertruck scheduling
     </script>
 </body>
 </html> 

@@ -251,4 +251,30 @@ body {
 .audio-control:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.05);
+}
+
+.cybertruck {
+    position: fixed;
+    font-size: 40px;
+    z-index: 200;
+    pointer-events: none;
+    animation: drive 8s linear;
+    opacity: 0;
+}
+
+@keyframes drive {
+    0% {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(calc(100vw + 100px));
+    }
 } 
