@@ -12,17 +12,52 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="cursor-trail"></div>
     <div class="flag-background">
         <div class="star-of-david"></div>
     </div>
     <div class="container">
-        <h1 class="slogan">YOUR DONATIONS WILL FUND THE 2025 IDF HOTTIES CALENDAR</h1>
+        <h1 class="slogan" data-text="YOUR DONATIONS WILL FUND THE 2025 IDF HOTTIES CALENDAR">YOUR DONATIONS WILL FUND THE 2025 IDF HOTTIES CALENDAR</h1>
         <a href="https://www.youtube.com/watch?v=zL19uMsnpSU" target="_blank" class="donate-button">
             DONATE TO OUR ONLYFANS HERE
         </a>
     </div>
     <button id="startAudio" class="audio-control">🔇 Click to Unmute</button>
     <script>
+        // Cursor trail effect
+        const cursorTrail = document.querySelector('.cursor-trail');
+        const trails = [];
+        const trailCount = 20;
+
+        for (let i = 0; i < trailCount; i++) {
+            const trail = document.createElement('div');
+            trail.className = 'trail';
+            trail.style.backgroundColor = `hsl(${(i / trailCount) * 360}, 100%, 50%)`;
+            trail.style.opacity = 1 - (i / trailCount);
+            trails.push(trail);
+            cursorTrail.appendChild(trail);
+        }
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let trailIndex = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function updateTrails() {
+            const trail = trails[trailIndex];
+            trail.style.left = mouseX + 'px';
+            trail.style.top = mouseY + 'px';
+            
+            trailIndex = (trailIndex + 1) % trailCount;
+            requestAnimationFrame(updateTrails);
+        }
+
+        updateTrails();
+
         // Money animation with touch optimization
         function createMoney() {
             const money = document.createElement('div');

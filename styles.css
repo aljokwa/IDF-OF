@@ -4,84 +4,48 @@
     box-sizing: border-box;
 }
 
-@keyframes glow {
+@keyframes glitch {
     0% {
-        text-shadow: 0 0 10px rgba(0, 56, 184, 0.7),
-                     0 0 20px rgba(0, 56, 184, 0.5),
-                     0 0 30px rgba(0, 56, 184, 0.3),
-                     0 0 40px rgba(0, 56, 184, 0.2);
-        filter: brightness(1);
+        transform: translate(0);
+        text-shadow: -2px 2px #0ff, 2px -2px #f0f;
+    }
+    25% {
+        transform: translate(-2px, 2px);
+        text-shadow: 2px -2px #0ff, -2px 2px #f0f;
     }
     50% {
-        text-shadow: 0 0 20px rgba(0, 56, 184, 1),
-                     0 0 30px rgba(0, 56, 184, 0.8),
-                     0 0 40px rgba(0, 56, 184, 0.6),
-                     0 0 50px rgba(0, 56, 184, 0.4),
-                     0 0 60px rgba(0, 56, 184, 0.2);
-        filter: brightness(1.2);
+        transform: translate(2px, -2px);
+        text-shadow: -2px 2px #ff0, 2px -2px #0ff;
+    }
+    75% {
+        transform: translate(-2px, 2px);
+        text-shadow: 2px -2px #f0f, -2px 2px #ff0;
     }
     100% {
-        text-shadow: 0 0 10px rgba(0, 56, 184, 0.7),
-                     0 0 20px rgba(0, 56, 184, 0.5),
-                     0 0 30px rgba(0, 56, 184, 0.3),
-                     0 0 40px rgba(0, 56, 184, 0.2);
-        filter: brightness(1);
+        transform: translate(0);
+        text-shadow: -2px 2px #0ff, 2px -2px #f0f;
     }
 }
 
 @keyframes float {
-    0% {
-        transform: translateY(0px);
+    0%, 100% {
+        transform: translateY(0) rotate(-2deg) scale(1);
     }
     50% {
-        transform: translateY(-10px);
-    }
-    100% {
-        transform: translateY(0px);
+        transform: translateY(-15px) rotate(2deg) scale(1.02);
     }
 }
 
-@keyframes pulse {
+@keyframes borderFlow {
     0% {
-        transform: scale(1);
+        border-image: linear-gradient(45deg, #ff00ff, #00ffff) 1;
     }
     50% {
-        transform: scale(1.02);
+        border-image: linear-gradient(225deg, #00ffff, #ff00ff) 1;
     }
     100% {
-        transform: scale(1);
+        border-image: linear-gradient(45deg, #ff00ff, #00ffff) 1;
     }
-}
-
-@keyframes borderGlow {
-    0% {
-        box-shadow: 0 0 10px rgba(0, 56, 184, 0.5),
-                    inset 0 0 10px rgba(0, 56, 184, 0.3);
-    }
-    50% {
-        box-shadow: 0 0 20px rgba(0, 56, 184, 0.8),
-                    inset 0 0 20px rgba(0, 56, 184, 0.5);
-    }
-    100% {
-        box-shadow: 0 0 10px rgba(0, 56, 184, 0.5),
-                    inset 0 0 10px rgba(0, 56, 184, 0.3);
-    }
-}
-
-@keyframes rainbow {
-    0% { border-color: #ff0000; }
-    14% { border-color: #ff7f00; }
-    28% { border-color: #ffff00; }
-    42% { border-color: #00ff00; }
-    56% { border-color: #0000ff; }
-    70% { border-color: #4b0082; }
-    84% { border-color: #8f00ff; }
-    100% { border-color: #ff0000; }
-}
-
-@keyframes wiggle {
-    0%, 100% { transform: rotate(-3deg) scale(1); }
-    50% { transform: rotate(3deg) scale(1.1); }
 }
 
 body {
@@ -92,11 +56,26 @@ body {
     font-family: 'Harmattan', sans-serif;
     position: relative;
     overflow: hidden;
-    background-image: url('background.jpg');  /* Your image file name here */
+    background-image: url('background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.1) 0%, transparent 60%),
+        radial-gradient(circle at 85% 15%, rgba(0, 255, 255, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 15% 85%, rgba(255, 255, 0, 0.1) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 .container {
@@ -104,6 +83,11 @@ body {
     z-index: 1;
     padding: 20px;
     text-align: center;
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 3px solid transparent;
+    animation: borderFlow 4s linear infinite;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .slogan {
@@ -112,44 +96,46 @@ body {
     margin-bottom: 40px;
     font-weight: 700;
     letter-spacing: 1.5px;
-    animation: glow 2s ease-in-out infinite,
-               float 3s ease-in-out infinite,
-               pulse 2s ease-in-out infinite;
-    background: rgba(255, 255, 255, 0.1);
+    animation: glitch 3s infinite, float 6s ease-in-out infinite;
     padding: 20px 40px;
     border-radius: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
     position: relative;
     display: inline-block;
-    backdrop-filter: blur(5px);
+    text-transform: uppercase;
 }
 
 .slogan::before {
-    content: '';
+    content: attr(data-text);
     position: absolute;
+    left: -2px;
+    text-shadow: 2px 0 #ff00ff;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 10px;
-    animation: borderGlow 2s ease-in-out infinite;
-    z-index: -1;
+    color: #fff;
+    overflow: hidden;
+    clip: rect(0, 900px, 0, 0);
+    animation: glitch-2 3s infinite linear alternate-reverse;
 }
 
-.slogan::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        #ffffff 50%, 
-        transparent 100%
-    );
-    animation: glow 2s ease-in-out infinite;
-    filter: blur(1px);
+@keyframes glitch-2 {
+    0% {
+        clip: rect(44px, 900px, 56px, 0);
+    }
+    20% {
+        clip: rect(12px, 900px, 78px, 0);
+    }
+    40% {
+        clip: rect(89px, 900px, 34px, 0);
+    }
+    60% {
+        clip: rect(67px, 900px, 92px, 0);
+    }
+    80% {
+        clip: rect(23px, 900px, 45px, 0);
+    }
+    100% {
+        clip: rect(56px, 900px, 89px, 0);
+    }
 }
 
 .donate-button {
@@ -159,18 +145,19 @@ body {
     font-weight: 700;
     text-decoration: none;
     color: white;
-    background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
     border-radius: 15px;
-    border: 4px solid white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
-                0 0 20px rgba(255, 107, 107, 0.4),
-                0 0 40px rgba(78, 205, 196, 0.3);
+    border: none;
+    box-shadow: 
+        0 0 20px rgba(255, 0, 255, 0.5),
+        0 0 40px rgba(0, 255, 255, 0.3),
+        inset 0 0 15px rgba(255, 255, 255, 0.5);
     transition: all 0.3s ease;
     letter-spacing: 2px;
     text-transform: uppercase;
     position: relative;
     overflow: hidden;
-    animation: rainbow 8s linear infinite;
+    backdrop-filter: blur(5px);
 }
 
 .donate-button::before {
@@ -180,6 +167,7 @@ body {
     top: 50%;
     transform: translateY(-50%);
     font-size: 24px;
+    filter: brightness(1.5) contrast(1.2);
 }
 
 .donate-button::after {
@@ -189,38 +177,30 @@ body {
     top: 50%;
     transform: translateY(-50%);
     font-size: 24px;
+    filter: brightness(1.5) contrast(1.2);
+}
+
+@keyframes buttonGlow {
+    0%, 100% {
+        box-shadow: 
+            0 0 20px rgba(255, 0, 255, 0.5),
+            0 0 40px rgba(0, 255, 255, 0.3),
+            inset 0 0 15px rgba(255, 255, 255, 0.5);
+        transform: scale(1) rotate(0deg);
+    }
+    50% {
+        box-shadow: 
+            0 0 30px rgba(255, 0, 255, 0.7),
+            0 0 60px rgba(0, 255, 255, 0.5),
+            inset 0 0 25px rgba(255, 255, 255, 0.7);
+        transform: scale(1.05) rotate(1deg);
+    }
 }
 
 .donate-button:hover {
-    transform: scale(1.05);
-    background: linear-gradient(45deg, #4ECDC4, #FF6B6B);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3),
-                0 0 30px rgba(255, 107, 107, 0.6),
-                0 0 50px rgba(78, 205, 196, 0.5);
-    animation: wiggle 0.5s ease-in-out infinite;
+    animation: buttonGlow 1s infinite;
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
     letter-spacing: 3px;
-}
-
-.money-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 100;
-    overflow: hidden;
-}
-
-@keyframes fall {
-    0% {
-        transform: translateY(-10vh) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
-    }
 }
 
 .money {
@@ -229,28 +209,30 @@ body {
     animation: fall linear forwards;
     user-select: none;
     z-index: 100;
-    filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.3));
+    filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.5));
 }
 
 .audio-control {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background: rgba(255, 255, 255, 0.1);
+    padding: 15px 25px;
+    font-size: 18px;
+    background: linear-gradient(45deg, rgba(255, 0, 255, 0.2), rgba(0, 255, 255, 0.2));
     border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
+    border-radius: 50px;
     color: white;
     cursor: pointer;
     backdrop-filter: blur(5px);
     transition: all 0.3s ease;
     z-index: 1000;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
 }
 
 .audio-control:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
+    background: linear-gradient(45deg, rgba(0, 255, 255, 0.3), rgba(255, 0, 255, 0.3));
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
 }
 
 .cybertruck {
@@ -260,21 +242,46 @@ body {
     pointer-events: none;
     animation: drive 8s linear;
     opacity: 0;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
 }
 
 @keyframes drive {
     0% {
         opacity: 0;
-        transform: translateX(-100px);
+        transform: translateX(-100px) scale(0.8);
+        filter: hue-rotate(0deg) drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
     }
     10% {
         opacity: 1;
+        transform: translateX(-50px) scale(1);
     }
     90% {
         opacity: 1;
+        transform: translateX(calc(100vw - 50px)) scale(1);
     }
     100% {
         opacity: 0;
-        transform: translateX(calc(100vw + 100px));
+        transform: translateX(calc(100vw + 100px)) scale(0.8);
+        filter: hue-rotate(360deg) drop-shadow(0 0 10px rgba(255, 0, 255, 0.5));
     }
+}
+
+.cursor-trail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.trail {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.1s ease;
+    mix-blend-mode: screen;
 } 
