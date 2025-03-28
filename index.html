@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Israel - Donate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Harmattan:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="flag-background">
+        <div class="star-of-david"></div>
+    </div>
+    <div class="container">
+        <h1 class="slogan">YOUR DONATIONS WILL FUND THE 2025 IDF HOTTIES CALENDAR</h1>
+        <a href="https://www.youtube.com/watch?v=zL19uMsnpSU" target="_blank" class="donate-button">
+            DONATE TO OUR ONLYFANS HERE
+        </a>
+    </div>
+    <button id="startAudio" class="audio-control">🔇 Click to Unmute</button>
+    <script>
+        // Money animation
+        function createMoney() {
+            const money = document.createElement('div');
+            money.classList.add('money');
+            money.innerHTML = '💰';
+            money.style.left = Math.random() * 100 + 'vw';
+            money.style.animationDuration = Math.random() * 2 + 3 + 's';
+            document.querySelector('.money-container').appendChild(money);
+            
+            setTimeout(() => {
+                money.remove();
+            }, 5000);
+        }
+        
+        setInterval(createMoney, 300);
+
+        // Audio context and beeper sounds
+        let audioContext;
+        let isPlaying = false;
+
+        function createBeep(frequency, duration) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = frequency;
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playRandomBeep() {
+            if (!isPlaying) return;
+            
+            const frequency = Math.random() * 200 + 400;
+            const duration = Math.random() * 0.2 + 0.1;
+            
+            createBeep(frequency, duration);
+            
+            const nextInterval = Math.random() * 1000 + 500;
+            setTimeout(playRandomBeep, nextInterval);
+        }
+
+        // Try to initialize audio context on page load
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // Create a silent buffer to unlock audio
+                const buffer = audioContext.createBuffer(1, 1, 22050);
+                const source = audioContext.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioContext.destination);
+                source.start(0);
+                
+                // Start playing after a small delay
+                setTimeout(() => {
+                    isPlaying = true;
+                    document.getElementById('startAudio').textContent = '🔊 Click to Mute';
+                    playRandomBeep();
+                }, 100);
+            } catch (e) {
+                console.log('Audio autoplay failed, waiting for user interaction');
+            }
+        }
+
+        // Handle user interaction
+        document.addEventListener('click', function initOnClick() {
+            if (!audioContext) {
+                initAudio();
+            }
+            document.removeEventListener('click', initOnClick);
+        });
+
+        // Initialize on page load
+        window.addEventListener('load', initAudio);
+
+        // Toggle audio button
+        document.getElementById('startAudio').addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent triggering the document click handler
+            
+            if (!audioContext) {
+                initAudio();
+                return;
+            }
+            
+            isPlaying = !isPlaying;
+            document.getElementById('startAudio').textContent = isPlaying ? '🔊 Click to Mute' : '🔇 Click to Unmute';
+            
+            if (isPlaying) {
+                playRandomBeep();
+            }
+        });
+    </script>
+</body>
+</html> 
